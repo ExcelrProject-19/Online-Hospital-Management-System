@@ -1,0 +1,58 @@
+/* Full background image */
+.login-page {
+    background-image: url('./login-bg.png'); /* Path to your background image */
+    background-size: cover; /* Ensure the image covers the whole screen */
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Prevent repeating the image */
+    height: 100vh; /* Full height of the viewport */
+}
+
+/* Styling for the card */
+.card {
+    border-radius: 15px; /* Rounded corners */
+    background-color: rgba(0, 3, 76, 0.85); /* Semi-transparent navy background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+    width: 100%;
+    max-width: 450px; /* Set max width for better responsiveness */
+    margin: auto;
+}
+
+/* Title styling */
+.card h3 {
+    font-size: 2rem;
+    font-weight: 500;
+}
+
+/* Form input and button styling */
+.form-control {
+    border-radius: 10px; /* Round the corners */
+    background-color: #f8f9fa; /* Light background for inputs */
+    border: 1px solid #ddd; /* Light border */
+}
+
+button {
+    font-weight: bold;
+    padding: 12px 20px;
+    border-radius: 10px;
+}
+
+/* Link styling */
+.text-white a {
+    color: #ffb3b3; /* Light color for the link */
+    text-decoration: none;
+}
+
+.text-white a:hover {
+    text-decoration: underline;
+}
+
+/* Add responsive design */
+@media (max-width: 768px) {
+    .card {
+        width: 90%;
+        padding: 20px;
+    }
+    .card h3 {
+        font-size: 1.5rem;
+    }
+}
