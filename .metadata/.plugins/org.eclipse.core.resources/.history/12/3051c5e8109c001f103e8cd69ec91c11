@@ -1,0 +1,67 @@
+package com.HMS.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.HMS.model.Appointment;
+import com.HMS.model.Doctor;
+import com.HMS.model.RoleType;
+import com.HMS.model.User;
+import com.HMS.repository.AppointmentRepo;
+import com.HMS.repository.DoctorRepo;
+import com.HMS.repository.UserRepo;
+
+@Service
+public class AppointmentService {
+	 	@Autowired
+	    private UserRepo userRepo;
+	    
+	    @Autowired
+	    private AppointmentRepo appointmentRepo;
+
+	    // Create an appointment between a patient and a doctor
+	    public Appointment createAppointment(Long patientId, Long doctorId, LocalDateTime appointmentDate, String description) {
+	        Optional<User> patientOpt = userRepo.findById(patientId);
+	        Optional<User> doctorOpt = userRepo.findById(doctorId);
+
+	        if (patientOpt.isPresent() && doctorOpt.isPresent()) {
+	            User patient = patientOpt.get();
+	            User doctor = doctorOpt.get();
+
+	            // Ensure roles are correct
+	            if (patient.getRoles().stream().anyMatch(role -> role.getName() == RoleType.PATIENT) &&
+	                doctor.getRoles().stream().anyMatch(role -> role.getName() == RoleType.DOCTOR)) {
+
+	                Appointment appointment = new Appointment();
+	                appointment.setPatient(patient);
+	                appointment.setDoctor(doctor);
+	                appointment.setAppointmentDate(appointmentDate);
+	                appointment.setDescription(description);
+	                
+	                return appointmentRepo.save(appointment);
+	            } else {
+	                throw new IllegalArgumentException("Roles are incorrect: Patient should have PATIENT role and Doctor should have DOCTOR role.");
+	            }
+	        } else {
+	            throw new IllegalArgumentException("Invalid Patient or Doctor ID");
+	        }
+	    }
+
+	    // Fetch appointments for a specific doctor
+	    public List<Appointment> getAppointmentsForDoctor(Long doctorId) {
+	        return userRepo.findById(doctorId)
+	                       .map(appointmentRepo::findByDoctor)
+	                       .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+	    }
+
+	    // Fetch appointments for a specific patient
+	    public List<Appointment> getAppointmentsForPatient(Long patientId) {
+	        return userRepo.findById(patientId)
+	                       .map(appointmentRepo::findByPatient)
+	                       .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+	    }
+}

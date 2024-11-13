@@ -1,0 +1,36 @@
+package com.HMS.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.HMS.model.Appointment;
+import com.HMS.model.AppointmentDTO;
+import com.HMS.service.AppointmentService;
+
+@RestController
+@RequestMapping("/api/patients")
+public class AppointmentController {
+	@Autowired
+	private AppointmentService appointmentService;
+	
+	@PostMapping("/appointments")
+    @PreAuthorize("hasAuthority('PATIENT')")
+	public ResponseEntity<?> addAppointment(@RequestBody AppointmentDTO appointmentDTO) {
+        try {
+            Appointment appointment = appointmentService.addAppointment(
+                appointmentDTO.getPatientId(),
+                appointmentDTO.getDoctorId(),
+                appointmentDTO.getAppointmentDate(),
+                appointmentDTO.getReasonForVisit()
+            );
+            return ResponseEntity.ok(appointment);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to add appointment: " + e.getMessage());
+        }
+    }
+}

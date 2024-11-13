@@ -1,0 +1,45 @@
+package com.HMS.controller;
+
+import com.HMS.model.Appointment;
+import com.HMS.model.AppointmentDTO;
+import com.HMS.model.User;
+import com.HMS.service.AppointmentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/appointments")
+public class AppointmentController {
+    
+    @Autowired
+    private AppointmentService appointmentService;
+
+    @PostMapping("/create")
+    @PreAuthorize("hasAuthority('PATIENT')")
+    public Appointment createAppointment(@RequestBody AppointmentDTO appointmentDTO, @AuthenticationPrincipal User principal) {
+        // Extract the authenticated user's email (using principal)
+        String email = principal.getEmail(); // Assuming email is the username
+
+        // Create the appointment using the authenticated patient's email
+        return appointmentService.createAppointment(
+                email, // The email extracted from the authenticated user
+                appointmentDTO.getDoctorId(),
+                appointmentDTO.getAppointmentDate(),
+                appointmentDTO.getDescription()
+        );
+    }
+
+    @GetMapping("/doctor/{doctorId}")
+    public List<Appointment> getAppointmentsForDoctor(@PathVariable Long doctorId) {
+        return appointmentService.getAppointmentsForDoctor(doctorId);
+    }
+
+    @GetMapping("/patient/{patientId}")
+    public List<Appointment> getAppointmentsForPatient(@PathVariable Long patientId) {
+        return appointmentService.getAppointmentsForPatient(patientId);
+    }
+}

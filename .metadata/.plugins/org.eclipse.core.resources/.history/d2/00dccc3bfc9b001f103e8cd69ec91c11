@@ -1,0 +1,36 @@
+package com.HMS.service;
+
+import java.time.LocalDateTime;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.HMS.model.Appointment;
+import com.HMS.model.Doctor;
+import com.HMS.model.User;
+import com.HMS.repository.AppointmentRepo;
+import com.HMS.repository.DoctorRepo;
+import com.HMS.repository.UserRepo;
+
+public class AppointmentService {
+	 	@Autowired
+	    private UserRepo userRepo;
+
+	    @Autowired
+	    private DoctorRepo doctorRepo;
+	    
+	    @Autowired
+	    private AppointmentRepo appointmentRepo;
+
+	    public Appointment addAppointment(Long patientId, Long doctorId, LocalDateTime appointmentDate, String reasonForVisit) throws Exception {
+	        User patient = userRepo.findById(patientId).orElseThrow(() -> new Exception("Patient not found"));
+	        Doctor doctor = doctorRepo.findById(doctorId).orElseThrow(() -> new Exception("Doctor not found"));
+
+	        Appointment appointment = new Appointment();
+	        appointment.setPatient(patient);
+	        appointment.setDoctor(doctor);
+	        appointment.setAppointmentDate(appointmentDate);
+	        appointment.setReasonForVisit(reasonForVisit);
+
+	        return appointmentRepo.save(appointment);
+	    }
+}

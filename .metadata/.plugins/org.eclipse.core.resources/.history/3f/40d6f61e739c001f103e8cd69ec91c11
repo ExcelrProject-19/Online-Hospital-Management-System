@@ -1,0 +1,97 @@
+package com.HMS.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import com.HMS.model.Appointment;
+import com.HMS.model.Doctor;
+import com.HMS.model.RoleType;
+import com.HMS.model.User;
+import com.HMS.repository.AppointmentRepo;
+import com.HMS.repository.DoctorRepo;
+import com.HMS.repository.UserRepo;
+
+@Service
+public class AppointmentService {
+
+    @Autowired
+    private UserRepo userRepo;
+    
+    @Autowired
+    private DoctorRepo doctorRepo;
+    
+    @Autowired
+    private AppointmentRepo appointmentRepo;
+
+    public Appointment createAppointment(String email, Long doctorId, LocalDateTime appointmentDate, String description) {
+        Optional<User> patientOpt = userRepo.findByEmail(email);
+        Optional<Doctor> doctorOpt = doctorRepo.findById(doctorId);
+
+        if (patientOpt.isEmpty() || doctorOpt.isEmpty()) {
+            throw new IllegalArgumentException("Invalid Patient or Doctor ID.");
+        }
+
+        User patient = patientOpt.get();
+        Doctor doctor = doctorOpt.get();
+
+//        if (!patient.getRoles().stream().anyMatch(role -> role.getName().equals(RoleType.PATIENT)) ||
+//        	    !doctor.getRoles().stream().anyMatch(role -> role.getName().equals(RoleType.DOCTOR))) {
+//        	    throw new IllegalArgumentException("Roles are incorrect: Patient should have PATIENT role and Doctor should have DOCTOR role.");
+//        	}
+
+        Appointment appointment = new Appointment();
+        appointment.setPatient(patient);
+        appointment.setDoctor(doctor);
+        appointment.setAppointmentDate(appointmentDate);
+        appointment.setDescription(description);
+        
+        return appointmentRepo.save(appointment);
+    }
+
+//    public List<Appointment> getAppointmentsForDoctor(Long doctorId) {
+//        return userRepo.findById(doctorId)
+//                       .map(appointmentRepo::findByDoctor)
+//                       .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+//    }
+//
+//    public List<Appointment> getAppointmentsForPatient(Long patientId) {
+//        return userRepo.findById(patientId)
+//                       .map(appointmentRepo::findByPatient)
+//                       .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+//    }
+    
+    // Get Appointments for Patient
+    public List<Appointment> getAppointmentsForPatient(String email) {
+        User patient = userRepo.findByEmail(email)
+                               .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+
+        if (!patient.getRoles().contains(RoleType.PATIENT)) {
+            throw new IllegalArgumentException("The logged-in user is not a patient.");
+        }
+
+        return appointmentRepo.findByPatient(patient);
+    }
+
+    // Get Appointments for Doctor
+    public List<Appointment> getAppointmentsForDoctor(String email) {
+        User doctor = userRepo.findByEmail(email)
+                              .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+
+//        if (!doctor.getRoles().contains(RoleType.DOCTOR)) {
+//            throw new IllegalArgumentException("The logged-in user is not a doctor.");
+//        }
+
+        Doctor doctorEntity = doctor.getDoctor(); // Assuming `getDoctor()` fetches associated Doctor entity
+        return appointmentRepo.findByDoctor(doctorEntity.getUser());
+    }
+
+    // Get the currently authenticated user's email
+    public String getAuthenticatedUserEmail() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+}

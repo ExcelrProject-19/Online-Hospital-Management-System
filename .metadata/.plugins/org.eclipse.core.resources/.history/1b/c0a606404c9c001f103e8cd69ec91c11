@@ -1,0 +1,65 @@
+package com.HMS.model;
+
+
+import java.time.LocalDateTime;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class AppointmentDTO {
+    private Long id;
+    private LocalDateTime appointmentDate;
+    private String description;
+
+    private Long patientId;
+    private String patientFirstName;
+    private String patientLastName;
+    private String patientEmail;
+    private String patientMobileNumber;
+    private String patientGender;
+    private String patientDateOfBirth;
+    private String patientCity;
+
+    private Long doctorId;
+    private String doctorFirstName;
+    private String doctorLastName;
+    private String doctorEmail;
+    private String doctorMobileNumber;
+    private String doctorGender;
+    private String doctorDateOfBirth;
+    private String doctorCity;
+
+    // Constructor to map fields from Appointment entity
+    public AppointmentResponseDTO(Appointment appointment) {
+        this.id = appointment.getId();
+        this.appointmentDate = appointment.getAppointmentDate();
+        this.description = appointment.getDescription();
+        
+        // Patient details
+        User patient = appointment.getPatient();
+        this.patientId = patient.getUid();
+        this.patientFirstName = patient.getFirstName();
+        this.patientLastName = patient.getLastName();
+        this.patientEmail = patient.getEmail();
+        this.patientMobileNumber = patient.getMobileNumber();
+        this.patientGender = patient.getGender();
+        this.patientDateOfBirth = patient.getDateOfBirth().toString();
+        this.patientCity = patient.getCity();
+
+        // Doctor details
+        User doctor = appointment.getDoctor();
+        this.doctorId = doctor.getUid();
+        this.doctorFirstName = doctor.getFirstName();
+        this.doctorLastName = doctor.getLastName();
+        this.doctorEmail = doctor.getEmail();
+        this.doctorMobileNumber = doctor.getMobileNumber();
+        this.doctorGender = doctor.getGender();
+        this.doctorDateOfBirth = doctor.getDateOfBirth().toString();
+        this.doctorCity = doctor.getCity();
+    }
+
+    // Getters and setters (if not using Lombok)
+}

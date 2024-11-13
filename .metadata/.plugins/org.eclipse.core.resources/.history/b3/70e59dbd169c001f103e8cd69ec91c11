@@ -1,0 +1,46 @@
+package com.HMS.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "appointments")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Appointment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // Use the User entity for both doctor and patient
+    @ManyToOne
+    @JoinColumn(name = "patient_id", nullable = false)
+    private User patient;
+
+    @ManyToOne
+    @JoinColumn(name = "doctor_id", nullable = false)
+    private User doctor;
+
+    private LocalDateTime appointmentDate;
+    
+    @Column(length = 500)
+    private String description;  // Details about the appointment
+
+    // If not using Lombok, add getter and setter methods
+
+    public void setPatient(User patient) {
+        this.patient = patient;
+    }
+
+    public void setDoctor(User doctor) {
+        this.doctor = doctor;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+}

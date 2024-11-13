@@ -1,0 +1,5 @@
+package com.HMS.model;
+
+public class Appointment {
+
+}

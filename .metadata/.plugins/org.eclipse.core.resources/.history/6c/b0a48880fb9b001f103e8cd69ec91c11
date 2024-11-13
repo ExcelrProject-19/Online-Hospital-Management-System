@@ -1,0 +1,5 @@
+package com.HMS.service;
+
+public class AppointmentService {
+
+}

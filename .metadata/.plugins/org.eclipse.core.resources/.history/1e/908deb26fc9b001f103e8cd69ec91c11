@@ -1,0 +1,5 @@
+package com.HMS.controller;
+
+public class AppointmentController {
+
+}

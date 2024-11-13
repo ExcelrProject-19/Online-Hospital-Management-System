@@ -1,0 +1,32 @@
+package com.HMS.controller;
+
+import com.HMS.model.Appointment;
+import com.HMS.service.AppointmentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@RestController
+@RequestMapping("/appointments")
+public class AppointmentController {
+    @Autowired
+    private AppointmentService appointmentService;
+
+    @PostMapping("/create")
+    public Appointment createAppointment(@RequestParam Long patientId, @RequestParam Long doctorId,
+                                         @RequestParam LocalDateTime appointmentDate, @RequestParam String description) {
+        return appointmentService.createAppointment(patientId, doctorId, appointmentDate, description);
+    }
+
+    @GetMapping("/doctor/{doctorId}")
+    public List<Appointment> getAppointmentsForDoctor(@PathVariable Long doctorId) {
+        return appointmentService.getAppointmentsForDoctor(doctorId);
+    }
+
+    @GetMapping("/patient/{patientId}")
+    public List<Appointment> getAppointmentsForPatient(@PathVariable Long patientId) {
+        return appointmentService.getAppointmentsForPatient(patientId);
+    }
+}
