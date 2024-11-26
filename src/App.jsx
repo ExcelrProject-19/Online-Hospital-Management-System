@@ -7,6 +7,7 @@ import PatientDashboard from './components/dashboards/Patient/PatientDashboard';
 import DoctorDashboard from './components/dashboards/Doctor/DoctorDashboard';
 import AdminDashboard from './components/dashboards/Admin/AdminDashboard';
 import RoleSelection from './components/auth/Login/RoleSelection';
+import DoctorAppointments from './components/dashboards/Doctor/DoctorAppointments';
 const App=()=>{
   return(
     <>
@@ -21,6 +22,7 @@ const App=()=>{
         <Route path='/doctor-dashboard' element={<DoctorDashboard/>}></Route>
         <Route path='/admin-dashboard' element={<AdminDashboard/>}></Route>
         <Route path="/role-selection" element={<RoleSelection/>}></Route>
+        <Route path="/appointments/:id" element={<DoctorAppointments />} />
       </Routes>
     </BrowserRouter>
     </>

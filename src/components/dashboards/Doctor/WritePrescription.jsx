@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { getAppointmentsForDoctor } from '../../../api';
+import { getAppointmentsForDoctor, submitPrescription } from '../../../api';
 
 const WritePrescription = () => {
     const [appointments, setAppointments] = useState([]);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [medicines, setMedicines] = useState([{ name: '', type: '', instructions: '' }]);
     const [diagnoses, setDiagnoses] = useState([{ diagnosis: '', instructions: '' }]);
     const [notes, setNotes] = useState('');
+    const prescriptionDate = new Date().toLocaleDateString();
 
     useEffect(() => {
         const fetchAppointments = async () => {
@@ -24,147 +26,218 @@ const WritePrescription = () => {
         setMedicines([...medicines, { name: '', type: '', instructions: '' }]);
     };
 
+    const handleRemoveMedicine = (index) => {
+        setMedicines(medicines.filter((_, i) => i !== index));
+    };
+
     const handleAddDiagnosis = () => {
         setDiagnoses([...diagnoses, { diagnosis: '', instructions: '' }]);
     };
 
-    const handleSubmitPrescription = () => {
-        // Handle submission logic (API call, etc.)
-        alert("Prescription Submitted!");
+    const handleRemoveDiagnosis = (index) => {
+        setDiagnoses(diagnoses.filter((_, i) => i !== index));
+    };
+
+    const handleSubmitPrescription = async () => {
+        if (!selectedAppointment) {
+            alert('Please select an appointment before submitting a prescription.');
+            return;
+        }
+
+        const prescriptionDTO = {
+            medicines,
+            diagnoses,
+            notes,
+            prescriptionDate,
+        };
+
+        try {
+            await submitPrescription(selectedAppointment.appointmentId, prescriptionDTO);
+            alert('Prescription submitted successfully!');
+            setMedicines([{ name: '', type: '', instructions: '' }]);
+            setDiagnoses([{ diagnosis: '', instructions: '' }]);
+            setNotes('');
+            setSelectedAppointment(null);
+        } catch (error) {
+            console.error('Error submitting prescription:', error);
+            alert('Failed to submit the prescription. Please try again.');
+        }
+    };
+
+    const sectionStyle = {
+        border: '1px solid #ccc',
+        borderRadius: '8px',
+        padding: '15px',
+        marginBottom: '20px',
+        backgroundColor: '#fff',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    };
+
+    const inputStyle = {
+        padding: '10px',
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        width: '100%',
+        marginBottom: '10px',
+    };
+
+    const addButtonStyle = {
+        padding: '5px 10px',
+        fontSize: '0.8rem',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        backgroundColor: '#007bff',
+        color: '#fff',
+        border: 'none',
+    };
+
+    const removeButtonStyle = {
+        padding: '5px 10px',
+        fontSize: '0.8rem',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        backgroundColor: '#dc3545',
+        color: '#fff',
+        border: 'none',
     };
 
     return (
-        <div>
-            {/* Appointment & Patient Details */}
-            <section style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>Patient & Appointment Details</h4>
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Patient Name</th>
-                            <th>Appointment Date</th>
-                            <th>Reason</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {appointments.length > 0 ? (
-                            appointments.map((appointment) => (
-                                <tr key={appointment.appointmentId}>
-                                    <td>{`${appointment.patient.firstName} ${appointment.patient.lastName}`}</td>
-                                    <td>{new Date(appointment.appointmentDate).toLocaleString()}</td>
-                                    <td>{appointment.description}</td>
-                                    <td>{appointment.status}</td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="5">No appointments found</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+        <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
+            <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333' }}>Write Prescription</h2>
+
+            {/* Select Appointment */}
+            <section style={sectionStyle}>
+                <h4>Select Appointment</h4>
+                <select
+                    onChange={(e) => {
+                        const appointmentId = parseInt(e.target.value, 10);
+                        const appointment = appointments.find(appt => appt.appointmentId === appointmentId);
+                        setSelectedAppointment(appointment || null);
+                    }}
+                    style={inputStyle}
+                >
+                    <option value="">-- Select an Appointment --</option>
+                    {appointments.map(appointment => (
+                        <option key={appointment.appointmentId} value={appointment.appointmentId}>
+                            {`${appointment.patient.firstName} ${appointment.patient.lastName} - ${new Date(appointment.appointmentDate).toLocaleDateString()}`}
+                        </option>
+                    ))}
+                </select>
             </section>
 
-            {/* Medicines Section */}
-            <section style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h4 style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>Medicines</h4>
-                    <button 
-                        type="button" 
-                        style={{ background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer' }} 
-                        onClick={handleAddMedicine}>
-                        + {/* Plus icon */}
+            {/* Patient and Prescription Details */}
+            {selectedAppointment && (
+                <section style={sectionStyle}>
+                    <h4>Patient Details</h4>
+                    <p><strong>Patient Name:</strong> {`${selectedAppointment.patient.firstName} ${selectedAppointment.patient.lastName}`}</p>
+                    <p><strong>Problem:</strong> {selectedAppointment.description}</p>
+                    <p><strong>Appointment Date:</strong> {new Date(selectedAppointment.appointmentDate).toLocaleDateString()}</p>
+                    <p><strong>Prescription Date:</strong> {prescriptionDate}</p>
+                </section>
+            )}
+
+            {/* Medicines */}
+            <section style={sectionStyle}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <h4>Medicines</h4>
+                    <button type="button" onClick={handleAddMedicine} style={addButtonStyle}>
+                        Add Medicine
                     </button>
                 </div>
                 {medicines.map((medicine, index) => (
-                    <div key={index} style={{ display: 'flex', gap: '10px' }}>
+                    <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                         <input
                             type="text"
-                            placeholder="Medicine Name"
+                            placeholder="Name"
                             value={medicine.name}
                             onChange={(e) => {
-                                const updatedMedicines = [...medicines];
-                                updatedMedicines[index].name = e.target.value;
-                                setMedicines(updatedMedicines);
+                                const updated = [...medicines];
+                                updated[index].name = e.target.value;
+                                setMedicines(updated);
                             }}
+                            style={inputStyle}
                         />
                         <input
                             type="text"
-                            placeholder="Medicine Type"
+                            placeholder="Type"
                             value={medicine.type}
                             onChange={(e) => {
-                                const updatedMedicines = [...medicines];
-                                updatedMedicines[index].type = e.target.value;
-                                setMedicines(updatedMedicines);
+                                const updated = [...medicines];
+                                updated[index].type = e.target.value;
+                                setMedicines(updated);
                             }}
+                            style={inputStyle}
                         />
-                        <input
-                            type="text"
+                        <textarea
                             placeholder="Instructions"
                             value={medicine.instructions}
                             onChange={(e) => {
-                                const updatedMedicines = [...medicines];
-                                updatedMedicines[index].instructions = e.target.value;
-                                setMedicines(updatedMedicines);
+                                const updated = [...medicines];
+                                updated[index].instructions = e.target.value;
+                                setMedicines(updated);
                             }}
+                            style={inputStyle}
                         />
+                        <button type="button" onClick={() => handleRemoveMedicine(index)} style={removeButtonStyle}>
+                            Remove
+                        </button>
                     </div>
                 ))}
             </section>
 
-            {/* Diagnosis Section */}
-            <section style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h4 style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>Diagnosis</h4>
-                    <button 
-                        type="button" 
-                        style={{ background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer' }} 
-                        onClick={handleAddDiagnosis}>
-                        + {/* Plus icon */}
+            {/* Diagnoses */}
+            <section style={sectionStyle}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <h4>Diagnoses</h4>
+                    <button type="button" onClick={handleAddDiagnosis} style={addButtonStyle}>
+                        Add Diagnosis
                     </button>
                 </div>
                 {diagnoses.map((diagnosis, index) => (
-                    <div key={index} style={{ display: 'flex', gap: '10px' }}>
+                    <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                         <input
                             type="text"
                             placeholder="Diagnosis"
                             value={diagnosis.diagnosis}
                             onChange={(e) => {
-                                const updatedDiagnoses = [...diagnoses];
-                                updatedDiagnoses[index].diagnosis = e.target.value;
-                                setDiagnoses(updatedDiagnoses);
+                                const updated = [...diagnoses];
+                                updated[index].diagnosis = e.target.value;
+                                setDiagnoses(updated);
                             }}
+                            style={inputStyle}
                         />
-                        <input
-                            type="text"
+                        <textarea
                             placeholder="Instructions"
                             value={diagnosis.instructions}
                             onChange={(e) => {
-                                const updatedDiagnoses = [...diagnoses];
-                                updatedDiagnoses[index].instructions = e.target.value;
-                                setDiagnoses(updatedDiagnoses);
+                                const updated = [...diagnoses];
+                                updated[index].instructions = e.target.value;
+                                setDiagnoses(updated);
                             }}
+                            style={inputStyle}
                         />
+                        <button type="button" onClick={() => handleRemoveDiagnosis(index)} style={removeButtonStyle}>
+                            Remove
+                        </button>
                     </div>
                 ))}
             </section>
 
-            {/* Notes Section */}
-            <section style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>Notes & Advice</h4>
+            {/* Notes */}
+            <section style={sectionStyle}>
+                <h4>Notes</h4>
                 <textarea
+                    placeholder="Additional Notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Write any notes or advice here"
-                    style={{ width: '100%', height: '100px' }}
-                ></textarea>
+                    style={{ ...inputStyle, height: '100px' }}
+                />
             </section>
 
             {/* Submit Button */}
-            <div style={{ marginTop: '20px' }}>
-                <button onClick={handleSubmitPrescription}>Submit Prescription</button>
-            </div>
+            <button type="button" onClick={handleSubmitPrescription} style={addButtonStyle}>
+                Submit Prescription
+            </button>
         </div>
     );
 };

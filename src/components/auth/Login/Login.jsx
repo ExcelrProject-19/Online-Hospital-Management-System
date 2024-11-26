@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './Login.css'; // Import the custom CSS for background image
+import './Login.css'; // Import the updated CSS file
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -15,11 +15,9 @@ const Login = () => {
         try {
             const response = await axios.post('http://localhost:9090/api/login', { email, password });
             const userData = response.data;
-            console.log(userData);
 
             if (userData && userData.roles) {
                 localStorage.setItem('user', JSON.stringify(userData));
-
                 const roles = userData.roles.map(role => role.authority);
                 if (roles.includes('DOCTOR')) {
                     navigate('/doctor-dashboard');
@@ -31,23 +29,21 @@ const Login = () => {
                     navigate('/');
                 }
             } else {
-                console.error('Roles are missing from the response');
                 alert('Login failed. Roles are missing.');
             }
         } catch (error) {
-            console.error('Login failed:', error);
             alert('Login failed. Please check your credentials.');
         }
     };
 
     return (
-        <div className="login-page">
-            <div className="d-flex justify-content-center align-items-center vh-100">
-                <div className="card p-5 shadow-lg"> {/* Navy Blue Color */}
-                    <h3 className="text-white text-center mb-4">Login</h3> {/* White Text */}
+        <div className="login-container">
+            <div className="login-left">
+                <div className="login-card">
+                    <h3 className="login-title">Login</h3>
                     <form onSubmit={handleLogin}>
                         <div className="mb-3">
-                            <label htmlFor="email" className="form-label text-navy">Email</label> {/* White Text */}
+                            <label htmlFor="email" className="form-label">Email</label>
                             <input 
                                 type="email" 
                                 className="form-control" 
@@ -59,7 +55,7 @@ const Login = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="password" className="form-label text-navy">Password</label> {/* White Text */}
+                            <label htmlFor="password" className="form-label">Password</label>
                             <input 
                                 type="password" 
                                 className="form-control" 
@@ -71,15 +67,18 @@ const Login = () => {
                             />
                         </div>
                         <div className="text-center">
-                            <button type="submit" className="btn btn-light w-50">Login</button> {/* Light Button */}
+                            <button type="submit" className="btn btn-primary w-100">Login</button>
                         </div>
                     </form>
                     <div className="text-center mt-3">
-                        <p className="text-white">
-                            Don't have an account? <a href="/signup" className="text-light">Sign Up</a>
+                        <p>
+                            Don't have an account? <a href="/signup" className="text-primary">Sign Up</a>
                         </p>
                     </div>
                 </div>
+            </div>
+            <div className="login-right">
+                {/* Add a background medical image */}
             </div>
         </div>
     );

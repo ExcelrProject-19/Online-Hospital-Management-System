@@ -210,9 +210,6 @@ export const bookAppointment = async (appointmentDTO) => {
 };
 
 
-
-
-
 //doctors can see this appointments: 
 export const getAppointmentsForDoctor = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -312,3 +309,111 @@ export const cancelAppointment = async (appointmentDTO) => {
     }
 };
 
+
+
+
+
+
+
+
+
+
+// Update a patient
+export const updatePatient = async (uid, updatedUserDTO) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!user || !user.token) {
+        throw new Error('No valid user session found');
+    }
+
+    try {
+        const response = await axios.put(`${API_URL}/patients/${uid}`, updatedUserDTO, {
+            headers: {
+                'Authorization': `Bearer ${user.token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        return response.data; // This will return the updated patient data
+    } catch (error) {
+        console.error('Error updating patient:', error);
+        throw error;
+    }
+};
+
+// Delete a patient
+export const deletePatient = async (uid) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!user || !user.token) {
+        throw new Error('No valid user session found');
+    }
+
+    try {
+        const response = await axios.delete(`${API_URL}/patients/${uid}`, {
+            headers: {
+                'Authorization': `Bearer ${user.token}`,
+            },
+        });
+
+        return response.data; // This will return a success message (e.g., "Patient deleted successfully.")
+    } catch (error) {
+        console.error('Error deleting patient:', error);
+        throw error;
+    }
+};
+
+// Search patients by name or mobile number
+export const searchPatients = async (keyword) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!user || !user.token) {
+        throw new Error('No valid user session found');
+    }
+
+    try {
+        const response = await axios.get(`${API_URL}/patients/search`, {
+            headers: {
+                'Authorization': `Bearer ${user.token}`,
+            },
+            params: { keyword }, // Send the search keyword as a query parameter
+        });
+
+        return response.data; // This will return the list of matching patients
+    } catch (error) {
+        console.error('Error searching patients:', error);
+        throw error;
+    }
+};
+
+
+export const submitPrescription = async (appointmentId, prescriptionDTO) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    console.log('User from localStorage:', user); // Debugging log
+
+    if (!user || !user.token) {
+        throw new Error('No valid user session found');
+    }
+
+    try {
+        const response = await axios.post(`${API_URL}/prescriptions/${appointmentId}/submit`, prescriptionDTO, {
+            headers: {
+                'Authorization': `Bearer ${user.token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        return response.data; // This will return the prescription confirmation or data
+    } catch (error) {
+        if (error.response) {
+            console.error('Error response:', error.response);
+            console.error('Error status:', error.response.status);
+            console.error('Error data:', error.response.data);
+        } else if (error.request) {
+            console.error('Error request:', error.request);
+        } else {
+            console.error('Error message:', error.message);
+        }
+        throw error;
+    }
+};

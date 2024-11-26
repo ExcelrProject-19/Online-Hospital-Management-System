@@ -1,16 +1,26 @@
 import { useEffect, useState } from "react";
-import { getAllUsers, AssignAsADoctor } from "../../../api"; // Ensure AssignAsADoctor is correctly set up
-import 'bootstrap/dist/css/bootstrap.min.css'; // Assuming you're using Bootstrap for styling
+import { getAllUsers, AssignAsADoctor } from "../../../api";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Table } from "react-bootstrap";
+import './AllPatients.css'; // Custom CSS file
 
 const AllPatients = () => {
   const [users, setUsers] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null); // Store the selected user
+  const [selectedUser, setSelectedUser] = useState(null);
   const [doctorData, setDoctorData] = useState({
     degree: "",
     qualification: "",
-    status: "ACTIVE", // Default status
+    status: "ACTIVE",
   });
+
+  const degrees = [
+    "MBBS", "MD", "MBBS + MS", "BDS", "MDS", "DNB", "BAMS", "BHMS", "BPT", "MPT"
+  ];
+
+  const specializations = [
+    "Cardiology", "Dermatology", "Neurology", "Orthopedics", "Pediatrics", "Psychiatry", "Gynecology", "ENT", "Radiology", "General Surgery"
+  ];
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -18,15 +28,15 @@ const AllPatients = () => {
         const userData = await getAllUsers();
         setUsers(userData);
       } catch (e) {
-        console.log(e);
+        console.error(e);
       }
     };
     fetchUsers();
   }, []);
 
   const handleAssignDoctor = (user) => {
-    setSelectedUser(user); // Set the selected user for doctor registration
-    setModalVisible(true); // Show the modal
+    setSelectedUser(user);
+    setModalVisible(true);
   };
 
   const handleChange = (e) => {
@@ -35,16 +45,12 @@ const AllPatients = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (selectedUser) {
       try {
-        // Call the API to assign the doctor role and save doctor details
         await AssignAsADoctor(selectedUser.uid, doctorData);
-
-        // Alert with user ID after successful registration
         alert(`${selectedUser.uid} is added as a Doctor now`);
 
-        // Close the modal and reset the form
+        // Reset form and close modal
         setModalVisible(false);
         setDoctorData({
           degree: "",
@@ -59,10 +65,10 @@ const AllPatients = () => {
   };
 
   return (
-    <div className="container mt-5">
+    <div className="container-fluid mt-5">
       <h2>All Users</h2>
-      <table className="table table-bordered table-striped">
-        <thead className="thead-dark">
+      <Table>
+        <thead>
           <tr>
             <th>UID</th>
             <th>First Name</th>
@@ -75,7 +81,7 @@ const AllPatients = () => {
             <th>City</th>
             <th>State</th>
             <th>Address</th>
-            <th>Actions</th> {/* Add actions column for assigning doctor */}
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -93,7 +99,6 @@ const AllPatients = () => {
               <td>{user.state}</td>
               <td>{user.address}</td>
               <td>
-                {/* Add button to assign doctor */}
                 <button
                   className="btn btn-primary"
                   onClick={() => handleAssignDoctor(user)}
@@ -104,71 +109,103 @@ const AllPatients = () => {
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
 
       {/* Modal for doctor registration */}
       {modalVisible && (
-        <div className="modal fade show" style={{ display: "block" }} tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="exampleModalLabel">Register Doctor</h5>
-                <button type="button" className="close" onClick={() => setModalVisible(false)} aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <form onSubmit={handleSubmit}>
-                <div className="modal-body">
-                  <div className="form-group">
-                    <label htmlFor="degree">Degree</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="degree"
-                      name="degree"
-                      value={doctorData.degree}
-                      onChange={handleChange}
-                      required
-                    />
+          <div
+            className="modal-overlay"
+            tabIndex="-1"
+            role="dialog"
+            aria-labelledby="exampleModalLabel"
+            aria-hidden="true"
+          >
+            <div className="modal-dialog custom-modal">
+              <div className="modal-content custom-modal-content">
+                <div>
+                <center><h5 className="modal-title" id="exampleModalLabel">Doctor Registration</h5></center>
+                </div>
+                <form onSubmit={handleSubmit}>
+                  <div className="modal-body">
+                    <table className="table">
+                      <tbody>
+                        <tr>
+                          <td><label htmlFor="degree">Degree</label></td>
+                          <td>
+                            <div className="dropdown">
+                              <select
+                                className="form-control custom-input dropdown-toggle"
+                                id="degree"
+                                name="degree"
+                                value={doctorData.degree}
+                                onChange={handleChange}
+                                required
+                              >
+                                <option value="">Select Degree</option>
+                                {degrees.map(degree => (
+                                  <option key={degree} value={degree}>{degree}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td><label htmlFor="qualification">Specialization</label></td>
+                          <td>
+                            <div className="dropdown">
+                              <select
+                                className="form-control custom-input dropdown-toggle"
+                                id="qualification"
+                                name="qualification"
+                                value={doctorData.qualification}
+                                onChange={handleChange}
+                                required
+                              >
+                                <option value="">Select Specialization</option>
+                                {specializations.map(spec => (
+                                  <option key={spec} value={spec}>{spec}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td><label htmlFor="status">Status</label></td>
+                          <td>
+                            <div className="dropdown">
+                              <select
+                                className="form-control custom-input dropdown-toggle"
+                                id="status"
+                                name="status"
+                                value={doctorData.status}
+                                onChange={handleChange}
+                              >
+                                <option value="ACTIVE">Active</option>
+                                <option value="INACTIVE">Inactive</option>
+                              </select>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                  <div className="form-group">
-                    <label htmlFor="qualification">Qualification</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="qualification"
-                      name="qualification"
-                      value={doctorData.qualification}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="status">Status</label>
-                    <select
-                      className="form-control"
-                      id="status"
-                      name="status"
-                      value={doctorData.status}
-                      onChange={handleChange}
+                  <div className="d-flex justify-content-evenly">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => setModalVisible(false)}
+                      style={{ backgroundColor: 'red', borderColor: 'red' }}
                     >
-                      <option value="ACTIVE">Active</option>
-                      <option value="INACTIVE">Inactive</option>
-                    </select>
+                      Close
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      Save Doctor
+                    </button>
                   </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setModalVisible(false)}>
-                    Close
-                  </button>
-                  <button type="submit" className="btn btn-primary">
-                    Save Doctor
-                  </button>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
       )}
     </div>
   );

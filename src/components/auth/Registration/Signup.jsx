@@ -103,7 +103,7 @@ function Signup() {
     return (
         <div className="signup-container">
             <div className="form-card">
-                <h2>Create an Account</h2>
+                <h2 style={{color:'white'}}>Create an Account</h2>
                 <br/>
                 {successMessage && (
                     <div className="alert alert-success" role="alert">

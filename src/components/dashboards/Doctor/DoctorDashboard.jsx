@@ -7,18 +7,24 @@ import { getAuthenticatedDoctor } from '../../../api';
 import { useNavigate } from 'react-router-dom';
 import DoctorAppointments from './DoctorAppointments';
 import WritePrescription from './WritePrescription';
+import ScheduleCalendar from './ScheduleCalendar'; // Import the ScheduleCalendar component
 
 const DoctorDashboard = () => {
     const [activeSection, setActiveSection] = useState(null);
     const [doctor, setDoctor] = useState(null);
+    const [appointments, setAppointments] = useState([]); // State to store appointments
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [isEditingProfile, setIsEditingProfile] = useState(false); // New state for editing profile
-    const navigate=useNavigate();
+    const navigate = useNavigate();
+
     useEffect(() => {
         const fetchDoctorDetails = async () => {
             try {
                 const doctorData = await getAuthenticatedDoctor();
                 setDoctor(doctorData);
+                if (doctorData && doctorData.appointments) {
+                    setAppointments(doctorData.appointments); // Set appointments from doctor data
+                }
             } catch (error) {
                 console.error('Failed to fetch doctor details:', error);
             }
@@ -42,7 +48,7 @@ const DoctorDashboard = () => {
     const handleLogout = () => {
         localStorage.removeItem("user");
         alert("Logged out");
-        navigate('/login')
+        navigate('/login');
     };
 
     const renderContent = () => {
@@ -53,13 +59,13 @@ const DoctorDashboard = () => {
             case 'dashboard':
                 return <div className="dashboard"><h1>Dashboard</h1></div>;
             case 'calendar':
-                return <div className="calendar"><h1>Calendar</h1></div>;
+                return <ScheduleCalendar appointments={appointments} />; // Render the ScheduleCalendar with appointments
             case 'appointments':
                 return <DoctorAppointments />;
             case 'patients':
                 return <div className="patients"><h1>Patients</h1></div>;
             case 'prescription':
-                return <WritePrescription/>
+                return <WritePrescription />;
             case 'notifications':
                 return <div className="notifications"><h1>Notifications</h1></div>;
             case 'paymentInfo':
@@ -80,10 +86,6 @@ const DoctorDashboard = () => {
                 </div>
                 <nav style={{ width: '200px' }}>
                     <ul className="list-unstyled nav-items">
-                        <li className="nav-item" onClick={() => handleSectionChange('dashboard')}>
-                            <FaTachometerAlt className="icon" />
-                            <span className="ms-2">My Dashboard</span>
-                        </li>
                         <li className="nav-item" onClick={() => handleSectionChange('calendar')}>
                             <FaCalendarAlt className="icon" />
                             <span className="ms-2">Schedule</span>
