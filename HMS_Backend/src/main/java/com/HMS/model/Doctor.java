@@ -31,6 +31,9 @@ public class Doctor {
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private long doctorId;
 
+		@OneToMany(mappedBy = "doctor")
+		private List<Prescription> prescriptions;
+
 	    @Column(nullable = false)
 	    private String degree;
 

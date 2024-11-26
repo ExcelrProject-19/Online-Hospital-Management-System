@@ -43,6 +43,9 @@ public class Appointment {
         this.status = status;
     }
 
+    @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL)
+    private Prescription prescription;
+
     // If not using Lombok, add getter and setter methods
 
     public void setPatient(User patient) {
